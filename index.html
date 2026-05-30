@@ -98,3 +98,26 @@ function search() {
   if (!q) {
     results.innerHTML = '<div class="empty">Ingrese un nombre o apellido para consultar sus turnos.</div>';
     return;
+  }
+  const matches = DATA.filter(item => normalize(item.name).includes(q));
+  if (!matches.length) {
+    results.innerHTML = '<div class="empty">No se encontraron turnos para esa búsqueda.</div>';
+    return;
+  }
+  results.innerHTML = matches.map(item => `
+    <article class="card">
+      <h2>${escapeHtml(item.name)}</h2>
+      ${table(item.turnos)}
+    </article>
+  `).join('');
+}
+
+button.addEventListener('click', search);
+input.addEventListener('input', search);
+input.addEventListener('keydown', event => {
+  if (event.key === 'Enter') search();
+});
+results.innerHTML = '<div class="empty">Ingrese un nombre o apellido para consultar sus turnos.</div>';
+</script>
+</body>
+</html>

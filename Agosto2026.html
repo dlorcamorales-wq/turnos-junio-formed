@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>¿Dónde atiendo? · Centro FORMED · Agosto 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,560;9..144,650&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #F2F6F5;
+    --panel: #FFFFFF;
+    --ink: #1E2B2B;
+    --muted: #5C6E6E;
+    --line: #DDE6E4;
+    --prov: #2E7D6B;
+    --prov-soft: #E4F1EC;
+    --ot302: #3C4E8C;
+    --ot302-soft: #E7EAF6;
+    --ot401: #B0812A;
+    --ot401-soft: #F5EBD6;
+    --am: #2C5282;
+    --am-soft: #E5EEF8;
+    --pm: #6B3FA0;
+    --pm-soft: #F0E8F8;
+    --radius: 14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background: var(--bg);
+    background-image:
+      radial-gradient(circle at 15% 0%, rgba(46,125,107,0.06), transparent 45%),
+      radial-gradient(circle at 100% 20%, rgba(60,78,140,0.05), transparent 40%);
+    color: var(--ink);
+    font-family: 'IBM Plex Sans', system-ui, sans-serif;
+    min-height: 100vh;
+    padding: 32px 16px 64px;
+  }
+  .wrap{max-width: 680px; margin: 0 auto;}
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--prov);
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+  h1{
+    font-family:'Fraunces', serif;
+    font-optical-sizing: auto;
+    font-weight: 650;
+    font-size: clamp(28px, 5vw, 38px);
+    line-height: 1.08;
+    margin: 0 0 10px;
+    letter-spacing: -0.01em;
+  }
+  .sub{
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.5;
+    max-width: 50ch;
+    margin: 0 0 28px;
+  }
+
+  .search-box{position: relative; margin-bottom: 8px;}
+  label.field-label{
+    display:block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+  }
+  input#search{
+    width: 100%;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 17px;
+    padding: 14px 16px;
+    border-radius: var(--radius);
+    border: 1.5px solid var(--line);
+    background: var(--panel);
+    color: var(--ink);
+    outline: none;
+    transition: border-color .15s ease, box-shadow .15s ease;
+  }
+  input#search:focus{
+    border-color: var(--prov);
+    box-shadow: 0 0 0 3px var(--prov-soft);
+  }
+  .suggestions{
+    position: absolute;
+    left:0; right:0;
+    top: calc(100% + 6px);
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: 0 8px 24px rgba(20,40,38,0.10);
+    max-height: 260px;
+    overflow-y: auto;
+    z-index: 20;
+    display: none;
+  }
+  .suggestions.open{display:block;}
+  .suggestion-item{
+    padding: 11px 16px;
+    cursor: pointer;
+    font-size: 15px;
+    border-bottom: 1px solid var(--line);
+  }
+  .suggestion-item:last-child{border-bottom:none;}
+  .suggestion-item:hover, .suggestion-item.active{
+    background: var(--prov-soft);
+  }
+  .suggestion-item mark{
+    background: none;
+    color: var(--prov);
+    font-weight: 600;
+  }
+
+  .legend{
+    display:flex; gap:16px; flex-wrap:wrap;
+    font-size: 12.5px;
+    color: var(--muted);
+    margin: 18px 0 30px;
+  }
+  .legend span{display:inline-flex; align-items:center; gap:6px;}
+  .dot{width:8px; height:8px; border-radius:50%; display:inline-block;}
+
+  #result{margin-top: 6px;}
+  .empty-state{
+    background: var(--panel);
+    border: 1px dashed var(--line);
+    border-radius: var(--radius);
+    padding: 26px 22px;
+    color: var(--muted);
+    font-size: 14.5px;
+    line-height: 1.6;
+  }
+  .result-header{
+    display:flex; align-items:baseline; justify-content:space-between;
+    gap: 12px; margin: 30px 0 14px;
+  }
+  .result-header h2{
+    font-family:'Fraunces', serif;
+    font-weight: 650;
+    font-size: 22px;
+    margin: 0;
+  }
+  .shift-count{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .alias-note{
+    font-size: 12.5px;
+    color: var(--muted);
+    margin: -6px 0 16px;
+  }
+
+  .week-grid-wrap{
+    border-radius: var(--radius);
+    overflow-x: auto;
+    overflow-y: hidden;
+    border: 1px solid var(--line);
+    background: var(--panel);
+  }
+  table.week-grid{
+    width: 100%;
+    min-width: 460px;
+    border-collapse: collapse;
+    table-layout: fixed;
+  }
+  .week-grid th, .week-grid td{
+    border-bottom: 1px solid var(--line);
+    border-right: 1px solid var(--line);
+    text-align: center;
+    padding: 8px 4px;
+  }
+  .week-grid th:last-child, .week-grid td:last-child{border-right: none;}
+  .week-grid tr:last-child td{border-bottom: none;}
+  .week-grid thead th{
+    font-family: 'Fraunces', serif;
+    font-weight: 650;
+    font-size: 14px;
+    padding: 10px 4px 8px;
+    background: rgba(46,125,107,0.04);
+  }
+  .week-grid thead th:first-child{background: transparent;}
+  .week-grid td.period-label, .week-grid th.corner{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    width: 42px;
+  }
+  .week-grid td.period-label.AM{color: var(--am);}
+  .week-grid td.period-label.PM{color: var(--pm);}
+
+  .cell-chip{
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0px;
+    padding: 6px 2px;
+    border-radius: 8px;
+    width: 100%;
+    min-height: 34px;
+  }
+  .cell-chip .box-num{
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 700;
+    font-size: 13px;
+    line-height: 1.15;
+  }
+  .cell-chip .suc-abbr{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 8.5px;
+    letter-spacing: 0.03em;
+    opacity: 0.8;
+    margin-top: 1px;
+  }
+  .cell-chip.Providencia{background: var(--prov-soft); color: var(--prov);}
+  .cell-chip.Oteiza302{background: var(--ot302-soft); color: var(--ot302);}
+  .cell-chip.Oteiza401{background: var(--ot401-soft); color: var(--ot401);}
+  .cell-empty{color: #C7D3D1; font-size: 13px;}
+
+  footer{
+    margin-top: 44px;
+    font-size: 12.5px;
+    color: var(--muted);
+    line-height: 1.6;
+    border-top: 1px solid var(--line);
+    padding-top: 18px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">Centro FORMED · Agosto 2026</div>
+  <h1>¿Dónde atiendo esta semana?</h1>
+  <p class="sub">Escribe tu nombre y revisa en qué sucursal, box y jornada atiendes cada día. El patrón se repite todas las semanas de agosto.</p>
+
+  <div class="search-box">
+    <label class="field-label" for="search">Tu nombre</label>
+    <input id="search" type="text" placeholder="Ej: Catalina Arce" autocomplete="off">
+    <div id="suggestions" class="suggestions"></div>
+  </div>
+
+  <div class="legend">
+    <span><span class="dot" style="background:var(--prov)"></span>Nueva Providencia 1714</span>
+    <span><span class="dot" style="background:var(--ot302)"></span>Fidel Oteiza 302</span>
+    <span><span class="dot" style="background:var(--ot401)"></span>Fidel Oteiza 401</span>
+  </div>
+
+  <div id="result"></div>
+
+  <footer>
+    Datos tomados de la pestaña "Agosto 2026" de la planilla de distribución. No se incluyen boxes marcados como DR ni Oficina de consulta. Si tu nombre no aparece o está escrito distinto, avisa a RRHH para corregirlo.
+  </footer>
+</div>
+
+<script id="people-data" type="application/json">[{"name":"Amapola González","aliases":["Amapola González (desde 16)"],"shifts":[{"day":"Lunes","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 3"},{"day":"Martes","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 401","box":"Box 6"}]},{"name":"Ambar Valdivieso","aliases":["Ambar Valdivieso (17-50)","Ambar a Valdivieso (17-50)"],"shifts":[{"day":"Lunes","period":"AM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 8"},{"day":"Miércoles","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 5"},{"day":"Jueves","period":"AM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 6"},{"day":"Viernes","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 6"}]},{"name":"Antonia Caroca","aliases":["Anto Caroca (4-18)","Antonia Caroca (4-18)","Antonia Caroca (4-18) (hasta agosto)"],"shifts":[{"day":"Lunes","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 8"},{"day":"Miércoles","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 401","box":"Box 2"},{"day":"Jueves","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 401","box":"Box 2"}]},{"name":"Antonia Chávez","aliases":["Antonia Chavez (5-21)","Antonia Chávez"],"shifts":[{"day":"Miércoles","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 1"},{"day":"Viernes","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 3"}]},{"name":"Antonia Gomez","aliases":["Antonia Gomez (desde 18)"],"shifts":[{"day":"Jueves","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 8"},{"day":"Viernes","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 9"}]},{"name":"Antonia Zuñiga","aliases":["Antonia Zuñiga (5-23)"],"shifts":[{"day":"Martes","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 401","box":"Box 4"},{"day":"Sábado","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 401","box":"Box 5"}]},{"name":"Augusta Pirozzi","aliases":["Augusta Pirozzi"],"shifts":[{"day":"Martes","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 3"},{"day":"Viernes","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 8"}]},{"name":"Barbara Brtio","aliases":["Barbara Brtio (desde 17)"],"shifts":[{"day":"Sábado","period":"AM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 1"}]},{"name":"Bastián Rivas","aliases":["Bastián Rivas (14-60)"],"shifts":[{"day":"Jueves","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 401","box":"Box 5"},{"day":"Sábado","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 9"}]},{"name":"Belen Riveros","aliases":["Belen Riveros (16-70)"],"shifts":[{"day":"Martes","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 10"}]},{"name":"Blanca Lihn","aliases":["Blanca Lihn (desde 18)"],"shifts":[{"day":"Miércoles","period":"AM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 2"},{"day":"Jueves","period":"PM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 5"},{"day":"Viernes","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 8"}]},{"name":"Camila Perez Ferretti","aliases":["Cami Perez (18-65)","Cami Perez Ferretti (18-65)"],"shifts":[{"day":"Lunes","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 10"},{"day":"Martes","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 2"},{"day":"Viernes","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Of/Box"},{"day":"Sábado","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 10"}]},{"name":"Camila Olivares","aliases":["Camila Olivares (21-65)"],"shifts":[{"day":"Miércoles","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 401","box":"Box 3"},{"day":"Viernes","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 401","box":"Box 6"}]},{"name":"Camila Urzua","aliases":["Camila Urzua (14-50)"],"shifts":[{"day":"Miércoles","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 2"},{"day":"Viernes","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 9"},{"day":"Sábado","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 1"}]},{"name":"Carla Bahamondes","aliases":["Carla Bahamondes (desde 15)"],"shifts":[{"day":"Lunes","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 3"},{"day":"Martes","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 5"},{"day":"Miércoles","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 8"},{"day":"Viernes","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 10"}]},{"name":"Catalina Mena","aliases":["Cata Mena  (15-65)","Cata Mena (15-65)"],"shifts":[{"day":"Lunes","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 2"},{"day":"Martes","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 5"},{"day":"Miércoles","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 5"},{"day":"Viernes","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Of/Box"},{"day":"Sábado","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 6"}]},{"name":"Catalina Achondo","aliases":["Catalina Achondo (desde 18)"],"shifts":[{"day":"Lunes","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 2"},{"day":"Miércoles","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 1"}]},{"name":"Catalina Arce","aliases":["Catalina Arce (desde 18)"],"shifts":[{"day":"Lunes","period":"AM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 1"},{"day":"Martes","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 401","box":"Box 1"},{"day":"Miércoles","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Of/Box"},{"day":"Jueves","period":"PM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 6"}]},{"name":"Catalina Velasquez","aliases":["Catalina Velasquez (19-99)"],"shifts":[{"day":"Martes","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 401","box":"Box 3"},{"day":"Miércoles","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 401","box":"Box 6"},{"day":"Jueves","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 401","box":"Box 6"}]},{"name":"Catherine Reiher","aliases":["Catherine Reiher (13-24)"],"shifts":[{"day":"Martes","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 3"}]},{"name":"Cecilia Cáceres","aliases":["Cecilia Cáceres (5-24)","Cecilia Cáceres (5-40)"],"shifts":[{"day":"Lunes","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 401","box":"Box 3"},{"day":"Martes","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 401","box":"Box 6"},{"day":"Miércoles","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 401","box":"Box 1"},{"day":"Sábado","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 4"}]},{"name":"Christel Romero","aliases":["Christel Romero (desde 3)"],"shifts":[{"day":"Martes","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 401","box":"Box 5"},{"day":"Jueves","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 401","box":"Box 4"},{"day":"Viernes","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 401","box":"Box 4"}]},{"name":"Constanza Arriaza","aliases":["Constanza Arriaza (6-18)"],"shifts":[{"day":"Lunes","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 401","box":"Box 6"},{"day":"Viernes","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 401","box":"Box 2"},{"day":"Sábado","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 401","box":"Box 1"}]},{"name":"Constanza Astete","aliases":["Constanza Astete (desde 18)"],"shifts":[{"day":"Lunes","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 8"},{"day":"Martes","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 401","box":"Box 4"},{"day":"Miércoles","period":"AM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 3"}]},{"name":"Fernanda Duran","aliases":["Fer Duran (desde 18)","Fer Duran (desde18)"],"shifts":[{"day":"Lunes","period":"PM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 1"},{"day":"Martes","period":"PM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 8"},{"day":"Miércoles","period":"AM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 6"},{"day":"Jueves","period":"PM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 3"}]},{"name":"Fernanda Boetsch","aliases":["Fernanda Boetsch (desde 23)"],"shifts":[{"day":"Miércoles","period":"PM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 6"},{"day":"Jueves","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 401","box":"Box 2"}]},{"name":"Fernanda Gallardo","aliases":["Fer Gallardo (18-60)","Fernanda Gallardo (18-60)"],"shifts":[{"day":"Lunes","period":"AM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 7"},{"day":"Martes","period":"AM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 8"},{"day":"Jueves","period":"AM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 8"}]},{"name":"Florencia Montecinos","aliases":["Flo Montecinos (17-60)","Flor Montecinos","Florencia Montesinos (17-60)"],"shifts":[{"day":"Lunes","period":"PM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 7"},{"day":"Miércoles","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 6"},{"day":"Sábado","period":"AM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 4"}]},{"name":"Florencia Vial","aliases":["Florencia Vial (15-70)"],"shifts":[{"day":"Martes","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 401","box":"Box 2"},{"day":"Miércoles","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 401","box":"Box 5"}]},{"name":"Francisca Moya","aliases":["Fran Moya (7-18)"],"shifts":[{"day":"Martes","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 9"},{"day":"Jueves","period":"PM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 4"},{"day":"Sábado","period":"AM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 3"}]},{"name":"Francisca Caceres","aliases":["Francisca Caceres (18-60)"],"shifts":[{"day":"Viernes","period":"AM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 7"}]},{"name":"Francisca Favero","aliases":["Fran Favero (4-17)","Francisca Favero (4-17)"],"shifts":[{"day":"Lunes","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 401","box":"Box 5"},{"day":"Jueves","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 9"},{"day":"Viernes","period":"AM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 6"}]},{"name":"Francisca Quiros","aliases":["Francisca Quiros (3-25)"],"shifts":[{"day":"Lunes","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 401","box":"Box 1"},{"day":"Jueves","period":"AM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 7"},{"day":"Viernes","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 401","box":"Box 1"}]},{"name":"Francisco Gonzalez","aliases":["Francisco Gonzalez (18-60)"],"shifts":[{"day":"Miércoles","period":"PM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 4"},{"day":"Viernes","period":"PM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 8"}]},{"name":"Gabriela Parada","aliases":["Gabriela Parada (18-90)"],"shifts":[{"day":"Lunes","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 5"},{"day":"Martes","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 6"},{"day":"Miércoles","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 10"}]},{"name":"Gonzalo Vergara","aliases":["Gonzalo Vergara (desde 18)"],"shifts":[{"day":"Martes","period":"PM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 7"},{"day":"Miércoles","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 9"}]},{"name":"Jaime Castro","aliases":["Jaime Castro (18-70)"],"shifts":[{"day":"Lunes","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 6"},{"day":"Martes","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 10"},{"day":"Miércoles","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 3"},{"day":"Viernes","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 6"}]},{"name":"Javiera Inostroza","aliases":["Javi Inostroza (7-30)","Javiera Inostroza (7-30)"],"shifts":[{"day":"Martes","period":"AM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 7"},{"day":"Miércoles","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 6"},{"day":"Jueves","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 4"},{"day":"Viernes","period":"AM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 8"}]},{"name":"Javiera Ubeda","aliases":["Javiera Ubeda (desde 16)"],"shifts":[{"day":"Lunes","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 4"},{"day":"Martes","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 1"},{"day":"Miércoles","period":"AM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 7"},{"day":"Jueves","period":"AM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 2"}]},{"name":"Josefina Albornoz","aliases":["Josefina Albornoz (3-18)"],"shifts":[{"day":"Lunes","period":"PM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 3"},{"day":"Martes","period":"PM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 6"},{"day":"Miércoles","period":"PM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 2"},{"day":"Sábado","period":"AM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 6"}]},{"name":"Josefina Basoalto","aliases":["Josefina Basoalto (18-50)"],"shifts":[{"day":"Lunes","period":"AM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 3"},{"day":"Martes","period":"PM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 2"},{"day":"Jueves","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 3"},{"day":"Viernes","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 5"}]},{"name":"Josefina Krusell","aliases":["Josefina Krusell (16-65)"],"shifts":[{"day":"Lunes","period":"PM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 6"},{"day":"Martes","period":"AM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 3"},{"day":"Miércoles","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 10"}]},{"name":"Josefina Marcos","aliases":["Jose Marcos (16-60)","Josefina Marcos  (16-60)","Josefina Marcos (16-60)"],"shifts":[{"day":"Lunes","period":"AM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 4"},{"day":"Martes","period":"AM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 6"},{"day":"Jueves","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 2"}]},{"name":"Josefina Mujica","aliases":["Ps Josefina Mujica  (15 en adelante)","Ps Josefina Mujica (15 en adelante)"],"shifts":[{"day":"Martes","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 4"},{"day":"Jueves","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 1"}]},{"name":"Katherine Yanzon","aliases":["Katherine Yanzon (desde 16)"],"shifts":[{"day":"Martes","period":"AM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 2"},{"day":"Viernes","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 401","box":"Box 2"}]},{"name":"M Catalina Aranguiz","aliases":["M Cata Aranguiz (desde 16)"],"shifts":[{"day":"Lunes","period":"AM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 6"},{"day":"Miércoles","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 3"},{"day":"Jueves","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 10"},{"day":"Viernes","period":"AM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 4"}]},{"name":"M Ignacia Larrachea","aliases":["M Igna Larrachea ( desde 18)","M Igna Larrachea (desde 18)"],"shifts":[{"day":"Miércoles","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 401","box":"Box 5"},{"day":"Jueves","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 401","box":"Box 5"},{"day":"Sábado","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 401","box":"Box 3"}]},{"name":"M Ignacia Contreras","aliases":["M Ignacia Contreras (7-50)"],"shifts":[{"day":"Lunes","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 1"},{"day":"Miércoles","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 401","box":"Box 2"},{"day":"Jueves","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 8"},{"day":"Viernes","period":"PM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 2"}]},{"name":"Macarena Soriano","aliases":["Macarena Soriano (10-17)"],"shifts":[{"day":"Martes","period":"PM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 3"},{"day":"Miércoles","period":"PM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 1"},{"day":"Viernes","period":"PM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 7"}]},{"name":"Magdalena Alonso","aliases":["Magdalena Alonso (desde 17)","Mane Alonso","Mane Alonso (desde 17)"],"shifts":[{"day":"Lunes","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 10"},{"day":"Martes","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 6"},{"day":"Miércoles","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 9"},{"day":"Jueves","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 6"}]},{"name":"Magdalena Morales","aliases":["Magdalena Morales (desde 18)"],"shifts":[{"day":"Martes","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 9"},{"day":"Miércoles","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 4"},{"day":"Jueves","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 2"}]},{"name":"Manuel Cañumir","aliases":["Manuel Cañumir (18-60)"],"shifts":[{"day":"Lunes","period":"PM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 2"},{"day":"Martes","period":"PM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 1"},{"day":"Jueves","period":"PM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 7"},{"day":"Viernes","period":"PM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 5"}]},{"name":"Maria Eugenia Huber","aliases":["Maria Eugenia Huber (18-100)"],"shifts":[{"day":"Viernes","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 4"},{"day":"Sábado","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 401","box":"Box 6"}]},{"name":"Maria Ignacia Cancino","aliases":["M Ignacia Cancino (18-60)","Maria Ignacia Cancino (18-60)"],"shifts":[{"day":"Miércoles","period":"AM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 1"},{"day":"Jueves","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 4"}]},{"name":"Martina Leon","aliases":["Martina Leon (18-60)"],"shifts":[{"day":"Lunes","period":"AM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 2"},{"day":"Martes","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 8"},{"day":"Miércoles","period":"PM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 7"},{"day":"Viernes","period":"PM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 1"}]},{"name":"María Ignacia Henríquez","aliases":["María Ignacia Henríquez (4-25)"],"shifts":[{"day":"Jueves","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 401","box":"Box 4"},{"day":"Viernes","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 401","box":"Box 7"},{"day":"Sábado","period":"AM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 8"}]},{"name":"María José Arias","aliases":["Maria José Arias (18-90)","María José Arias (desde 17)"],"shifts":[{"day":"Lunes","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 401","box":"Box 4"},{"day":"Martes","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 401","box":"Box 5"},{"day":"Miércoles","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 401","box":"Box 1"},{"day":"Viernes","period":"AM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 1"}]},{"name":"María José Bizama","aliases":["Maria José Bizama (15-99)","Maria José Bizama (16-99)","María José Bizama (15-99)"],"shifts":[{"day":"Martes","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 401","box":"Box 1"},{"day":"Miércoles","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 401","box":"Box 7"},{"day":"Jueves","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 401","box":"Box 1"}]},{"name":"María José Silva","aliases":["Maria Jose Silva (desde 17)","Maria José Silva (desde 17)"],"shifts":[{"day":"Miércoles","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 4"},{"day":"Jueves","period":"AM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 3"},{"day":"Viernes","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 5"}]},{"name":"Matías Montero","aliases":["Matías Montero (desde 18)"],"shifts":[{"day":"Lunes","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Of/Box"},{"day":"Viernes","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 10"},{"day":"Sábado","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 8"}]},{"name":"Melanie Contreras","aliases":["Melanie Contreras (desde 16)"],"shifts":[{"day":"Martes","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 2"},{"day":"Miércoles","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 2"},{"day":"Jueves","period":"PM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 8"},{"day":"Viernes","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 4"}]},{"name":"Michele Pizarro","aliases":["Michel Pizarro (18-60)","Michele Pizaro (18-60)","Michele Pizarro (18-60)"],"shifts":[{"day":"Martes","period":"AM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 4"},{"day":"Miércoles","period":"AM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 4"},{"day":"Jueves","period":"PM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 1"},{"day":"Viernes","period":"PM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 6"},{"day":"Sábado","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 5"}]},{"name":"Natalia Chávez","aliases":["Natalia Chávez (desde 6) T"],"shifts":[{"day":"Sábado","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 401","box":"Box 4"}]},{"name":"Paulina Cifuentes","aliases":["Pauli Cifuentes (18-60)","Paulina Cifuentes (18-60)"],"shifts":[{"day":"Lunes","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 4"},{"day":"Martes","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Of/Box"},{"day":"Miércoles","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 7"},{"day":"Jueves","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 5"},{"day":"Viernes","period":"AM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 2"}]},{"name":"Paz Frías","aliases":["Paz Frias (3-26)","Paz Frías (3-26)"],"shifts":[{"day":"Lunes","period":"PM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 8"},{"day":"Martes","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 4"},{"day":"Viernes","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 1"}]},{"name":"Pilar Ortiz","aliases":["Pilar Ortiz (15-65)","Pilar Ortiz (16-65)"],"shifts":[{"day":"Lunes","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 5"},{"day":"Miércoles","period":"AM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 8"},{"day":"Jueves","period":"AM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 4"}]},{"name":"Sofía Kalau","aliases":["Sofía Kalau (19-60)"],"shifts":[{"day":"Lunes","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 401","box":"Box 2"},{"day":"Jueves","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 401","box":"Box 3"}]},{"name":"Tatiana Silva","aliases":["Tatiana Silva (desde 18)","atiana Silva (desde 18)"],"shifts":[{"day":"Viernes","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 401","box":"Box 3"},{"day":"Sábado","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 401","box":"Box 2"}]},{"name":"Valentina Icarte","aliases":["Vale Icarte","Vale Icarte (6-27)","Vale icarte (6-17)"],"shifts":[{"day":"Miércoles","period":"PM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 3"},{"day":"Jueves","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 5"},{"day":"Viernes","period":"PM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 4"}]},{"name":"Valentina Maringer","aliases":["Valentina Maringer (desde 18)"],"shifts":[{"day":"Lunes","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 9"},{"day":"Jueves","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 10"}]},{"name":"Valentina Medina","aliases":["Valentina Medina (desde 18)"],"shifts":[{"day":"Lunes","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 401","box":"Box 7"},{"day":"Martes","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 401","box":"Box 3"},{"day":"Miércoles","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 401","box":"Box 3"}]},{"name":"Valentina Muñoz","aliases":["Valentina Muñoz (desde 16)"],"shifts":[{"day":"Miércoles","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 401","box":"Box 6"},{"day":"Jueves","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 401","box":"Box 3"},{"day":"Viernes","period":"AM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 3"}]},{"name":"Valentina Opazo","aliases":["Valentina Opazo (7-50)","Valentina Opazo (martes 16)"],"shifts":[{"day":"Martes","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 401","box":"Box 2"},{"day":"Miércoles","period":"PM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 8"},{"day":"Viernes","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 401","box":"Box 4"}]},{"name":"Valentina Torrejon","aliases":["Valentina Torrejon (0-60)"],"shifts":[{"day":"Miércoles","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Of/Box"},{"day":"Jueves","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 6"},{"day":"Viernes","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 2"},{"day":"Sábado","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 3"}]},{"name":"Valeria Baboun","aliases":["Valeria Baboun (6-70)"],"shifts":[{"day":"Miércoles","period":"AM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 401","box":"Box 4"},{"day":"Sábado","period":"AM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 7"}]},{"name":"Vania Morena","aliases":["Vania Morena (desde 18)"],"shifts":[{"day":"Lunes","period":"PM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 4"},{"day":"Jueves","period":"AM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 1"},{"day":"Sábado","period":"AM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 2"}]},{"name":"Vicente Muñoz","aliases":["Vicente Muñoz (18-70)"],"shifts":[{"day":"Lunes","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 302","box":"Box 6"},{"day":"Viernes","period":"PM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 3"}]},{"name":"Ámbar Fuenzalida","aliases":["Ambar Fuenzalida (5-25)","Ámbar Fuenzalida (agosto)"],"shifts":[{"day":"Martes","period":"PM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 4"},{"day":"Jueves","period":"PM","sucursal":"Nueva Providencia","direccion":"Nueva Providencia 1714","box":"Box 2"},{"day":"Viernes","period":"PM","sucursal":"Fidel Oteiza","direccion":"Fidel Oteiza 401","box":"Box 5"}]}]</script>
+<script>
+  const people = JSON.parse(document.getElementById('people-data').textContent);
+
+  function stripAccents(s){
+    return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  }
+  function norm(s){
+    return stripAccents(s).toLowerCase().trim();
+  }
+
+  const searchIndex = people.map(p => ({
+    person: p,
+    haystack: norm([p.name, ...p.aliases].join(' | '))
+  }));
+
+  const sucursalKey = (suc, dir) => {
+    if (suc === 'Nueva Providencia') return 'Providencia';
+    if (dir.includes('302')) return 'Oteiza302';
+    if (dir.includes('401')) return 'Oteiza401';
+    return 'Providencia';
+  };
+
+  const input = document.getElementById('search');
+  const suggBox = document.getElementById('suggestions');
+  const resultBox = document.getElementById('result');
+  let activeIndex = -1;
+  let currentMatches = [];
+
+  function renderSuggestions(query){
+    const q = norm(query);
+    if (q.length === 0){
+      suggBox.classList.remove('open');
+      suggBox.innerHTML = '';
+      currentMatches = [];
+      return;
+    }
+    currentMatches = searchIndex.filter(item => item.haystack.includes(q)).slice(0, 8);
+    if (currentMatches.length === 0){
+      suggBox.classList.remove('open');
+      suggBox.innerHTML = '';
+      return;
+    }
+    suggBox.innerHTML = currentMatches.map((item, i) =>
+      `<div class="suggestion-item${i === activeIndex ? ' active' : ''}" data-index="${i}">${item.person.name}</div>`
+    ).join('');
+    suggBox.classList.add('open');
+  }
+
+  function selectPerson(person){
+    input.value = person.name;
+    suggBox.classList.remove('open');
+    activeIndex = -1;
+    renderResult(person);
+  }
+
+  const dayLabels = { 'Lunes':'Lun', 'Martes':'Mar', 'Miércoles':'Mié', 'Jueves':'Jue', 'Viernes':'Vie', 'Sábado':'Sáb' };
+  const dayOrder = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  const sucAbbr = (key) => key === 'Providencia' ? 'NP 1714' : (key === 'Oteiza302' ? 'Ot. 302' : 'Ot. 401');
+
+  function renderResult(person){
+    if (!person){
+      resultBox.innerHTML = `<div class="empty-state">No encontramos a nadie con ese nombre en agosto. Prueba escribiendo solo tu nombre o apellido, o revisa que no esté con una variación distinta.</div>`;
+      return;
+    }
+
+    // index shifts by day+period for quick lookup
+    const grid = {};
+    person.shifts.forEach(s => { grid[`${s.day}|${s.period}`] = s; });
+
+    const headerCells = dayOrder.map(d => `<th>${dayLabels[d]}</th>`).join('');
+
+    const buildRow = (period) => {
+      const cells = dayOrder.map(d => {
+        const s = grid[`${d}|${period}`];
+        if (!s) return `<td class="cell-empty">–</td>`;
+        const key = sucursalKey(s.sucursal, s.direccion);
+        return `<td><div class="cell-chip ${key}" title="${s.sucursal} · ${s.direccion}">
+                  <span class="box-num">${s.box.replace('Box ', '')}</span>
+                  <span class="suc-abbr">${sucAbbr(key)}</span>
+                </div></td>`;
+      }).join('');
+      return `<tr><td class="period-label ${period}">${period}</td>${cells}</tr>`;
+    };
+
+    resultBox.innerHTML = `
+      <div class="result-header">
+        <h2>${person.name}</h2>
+        <span class="shift-count">${person.shifts.length} turno${person.shifts.length === 1 ? '' : 's'} / semana</span>
+      </div>
+      <div class="week-grid-wrap">
+        <table class="week-grid">
+          <thead><tr><th class="corner"></th>${headerCells}</tr></thead>
+          <tbody>${buildRow('AM')}${buildRow('PM')}</tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  input.addEventListener('input', () => {
+    activeIndex = -1;
+    renderSuggestions(input.value);
+  });
+
+  input.addEventListener('keydown', (e) => {
+    if (!suggBox.classList.contains('open')) return;
+    if (e.key === 'ArrowDown'){
+      e.preventDefault();
+      activeIndex = Math.min(activeIndex + 1, currentMatches.length - 1);
+      renderSuggestions(input.value);
+    } else if (e.key === 'ArrowUp'){
+      e.preventDefault();
+      activeIndex = Math.max(activeIndex - 1, 0);
+      renderSuggestions(input.value);
+    } else if (e.key === 'Enter'){
+      e.preventDefault();
+      if (activeIndex >= 0 && currentMatches[activeIndex]){
+        selectPerson(currentMatches[activeIndex].person);
+      } else if (currentMatches.length === 1){
+        selectPerson(currentMatches[0].person);
+      }
+    } else if (e.key === 'Escape'){
+      suggBox.classList.remove('open');
+    }
+  });
+
+  suggBox.addEventListener('click', (e) => {
+    const item = e.target.closest('.suggestion-item');
+    if (!item) return;
+    const idx = parseInt(item.dataset.index, 10);
+    selectPerson(currentMatches[idx].person);
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.search-box')){
+      suggBox.classList.remove('open');
+    }
+  });
+</script>
+</body>
+</html>
